@@ -3,11 +3,11 @@ import { Button, Error, Form, Header, Input, Label, LinkContainer } from '@pages
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
 import React, { useCallback, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import useSWR from 'swr';
 
 const LogIn = () => {
-  const { data, error } = useSWR('/api/users', fetcher); //로그인된 사용자 정보를 전해줄 api
+  const { data, error, mutate } = useSWR('http://localhost:3095/api/users', fetcher, { dedupingInterval: 1000000 });
   const [logInError, setLogInError] = useState(false);
   const [email, onChangeEmail] = useInput('');
   const [password, onChangePassword] = useInput('');
@@ -17,16 +17,27 @@ const LogIn = () => {
       e.preventDefault();
       setLogInError(false);
       axios
-        .post('/api/users/login', { email, password })
-        .then(() => {})
+        .post(
+          'http://localhost:3095/api/users/login',
+          { email, password },
+          {
+            withCredentials: true,
+          },
+        )
+        .then(() => {
+          mutate();
+        })
         .catch((error) => {
           setLogInError(error.response?.data?.code === 401);
         });
     },
-    [email, password],
+    [email, password, mutate],
   );
 
-  // console.log(error, userData);
+  if (data) {
+    return <Redirect to="/workspace/channel" />;
+  }
+
   // if (!error && userData) {
   //   console.log('로그인됨', userData);
   //   return <Redirect to="/workspace/sleact/channel/일반" />;
