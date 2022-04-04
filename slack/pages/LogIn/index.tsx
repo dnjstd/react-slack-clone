@@ -24,8 +24,8 @@ const LogIn = () => {
             withCredentials: true,
           },
         )
-        .then(() => {
-          mutate();
+        .then((response) => {
+          mutate(response.data, false);
         })
         .catch((error) => {
           setLogInError(error.response?.data?.code === 401);
