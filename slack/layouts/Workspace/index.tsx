@@ -2,7 +2,7 @@ import React, { FC, useCallback } from 'react';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import {
   Channels,
   Chats,
@@ -14,7 +14,11 @@ import {
   Workspaces,
   WorkspaceWrapper,
 } from '@layouts/Workspace/styles';
+import loadable from '@loadable/component';
 import gravatar from 'gravatar';
+
+const Channel = loadable(() => import('@pages/Channel'));
+const DirectMessage = loadable(() => import('@pages/DirectMessage'));
 
 const Workspace: FC = ({ children }) => {
   const { data, error, mutate } = useSWR('http://localhost:3095/api/users', fetcher);
@@ -49,7 +53,12 @@ const Workspace: FC = ({ children }) => {
           <WorkspaceName>Slact-Clone</WorkspaceName>
           <MenuScroll>menu scroll</MenuScroll>
         </Channels>
-        <Chats>Chats</Chats>
+        <Chats>
+          <Switch>
+            <Route path="/workspace/channel" component={Channel} />
+            <Route path="/workspace/dm" component={DirectMessage} />
+          </Switch>
+        </Chats>
       </WorkspaceWrapper>
       {children}
     </div>
