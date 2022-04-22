@@ -46,6 +46,11 @@ const Workspace: FC = ({ children }) => {
       });
   }, []);
 
+  const onCloseUserProfile = useCallback((e) => {
+    e.stopPropagation();
+    setShowUserMenu(false);
+  }, []);
+
   const onClickUserProfile = useCallback(() => {
     setShowUserMenu((prev) => !prev);
   }, []);
@@ -71,7 +76,7 @@ const Workspace: FC = ({ children }) => {
           <span onClick={onClickUserProfile}>
             <ProfileImg src={gravatar.url(useData.email, { s: '28px', d: 'retro' })} alt={useData.nickname} />
             {showUserMenu && (
-              <Menu style={{ right: 0, top: 38 }} show={showUserMenu} onCloseModal={onClickUserProfile}>
+              <Menu style={{ right: 0, top: 38 }} show={showUserMenu} onCloseModal={onCloseUserProfile}>
                 <ProfileModal>
                   <img src={gravatar.url(useData.email, { s: '36px', d: 'retro' })} alt={useData.nickname} />
                   <div>
@@ -99,7 +104,7 @@ const Workspace: FC = ({ children }) => {
         </Workspaces>
 
         <Channels>
-          <WorkspaceName>Slact-Clone</WorkspaceName>
+          <WorkspaceName>Slack-Clone</WorkspaceName>
           <MenuScroll>menu scroll</MenuScroll>
         </Channels>
         <Chats>
@@ -109,7 +114,7 @@ const Workspace: FC = ({ children }) => {
           </Switch>
         </Chats>
       </WorkspaceWrapper>
-      <Modal show={showCreateWorkspaceModal} onClose={onCloseModal}>
+      <Modal show={showCreateWorkspaceModal} onCloseModal={onCloseModal}>
         <form onSubmit={onCreateWorkspace}>
           <Label id="workspace-label">
             <span>워크스페이스 이름</span>
