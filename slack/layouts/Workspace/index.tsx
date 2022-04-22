@@ -2,8 +2,9 @@ import React, { FC, useCallback, useState } from 'react';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { Link, Redirect, Route, Switch } from 'react-router-dom';
 import {
+  AddButton,
   Channels,
   Chats,
   Header,
@@ -12,20 +13,28 @@ import {
   ProfileImg,
   ProfileModal,
   RightMenu,
+  WorkspaceButton,
   WorkspaceName,
   Workspaces,
   WorkspaceWrapper,
 } from '@layouts/Workspace/styles';
+import { Button, Label, Input } from '@pages/SignUp/styles';
 import loadable from '@loadable/component';
 import gravatar from 'gravatar';
 import Menu from '@components/Menu';
+import { IUser } from '@typings/db';
+import Modal from '@components/Modal';
+import useInput from '@hooks/useInput';
 
 const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
 
 const Workspace: FC = ({ children }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const { data, error, mutate } = useSWR('http://localhost:3095/api/users', fetcher);
+  const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
+  const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
+  const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
+  const { data: useData, error, mutate } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher);
 
   const onLogout = useCallback(() => {
     axios
@@ -41,7 +50,17 @@ const Workspace: FC = ({ children }) => {
     setShowUserMenu((prev) => !prev);
   }, []);
 
-  if (!data) {
+  const onClickCreateWorkspace = useCallback(() => {
+    setShowCreateWorkspaceModal(true);
+  }, []);
+
+  const onCreateWorkspace = useCallback(() => {}, []);
+
+  const onCloseModal = useCallback(() => {
+    setShowCreateWorkspaceModal(false);
+  }, []);
+
+  if (!useData) {
     return <Redirect to="/login" />;
   }
 
@@ -50,13 +69,13 @@ const Workspace: FC = ({ children }) => {
       <Header>
         <RightMenu>
           <span onClick={onClickUserProfile}>
-            <ProfileImg src={gravatar.url(data.email, { s: '28px', d: 'retro' })} alt={data.nickname} />
+            <ProfileImg src={gravatar.url(useData.email, { s: '28px', d: 'retro' })} alt={useData.nickname} />
             {showUserMenu && (
               <Menu style={{ right: 0, top: 38 }} show={showUserMenu} onCloseModal={onClickUserProfile}>
                 <ProfileModal>
-                  <img src={gravatar.url(data.email, { s: '36px', d: 'retro' })} alt={data.nickname} />
+                  <img src={gravatar.url(useData.email, { s: '36px', d: 'retro' })} alt={useData.nickname} />
                   <div>
-                    <span id="profile-name">{data.nickname}</span>
+                    <span id="profile-name">{useData.nickname}</span>
                     <span id="profile-active">Active</span>
                   </div>
                 </ProfileModal>
@@ -68,7 +87,17 @@ const Workspace: FC = ({ children }) => {
       </Header>
 
       <WorkspaceWrapper>
-        <Workspaces>test</Workspaces>
+        <Workspaces>
+          {useData?.Workspaces.map((ws) => {
+            return (
+              <Link key={ws.id} to={`/workspace/${123}/channel/일반`}>
+                <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
+              </Link>
+            );
+          })}
+          <AddButton onClick={onClickCreateWorkspace}>+</AddButton>
+        </Workspaces>
+
         <Channels>
           <WorkspaceName>Slact-Clone</WorkspaceName>
           <MenuScroll>menu scroll</MenuScroll>
@@ -80,7 +109,19 @@ const Workspace: FC = ({ children }) => {
           </Switch>
         </Chats>
       </WorkspaceWrapper>
-      {children}
+      <Modal show={showCreateWorkspaceModal} onClose={onCloseModal}>
+        <form onSubmit={onCreateWorkspace}>
+          <Label id="workspace-label">
+            <span>워크스페이스 이름</span>
+            <Input id="workspace" value={newWorkspace} onChange={onChangeNewWorkspace} />
+          </Label>
+          <Label id="workspace-label-url">
+            <span>워크스페이스 url</span>
+            <Input id="workspace" value={newUrl} onChange={onChangeNewUrl} />
+          </Label>
+          <Button type="submit">생성하기</Button>
+        </form>
+      </Modal>
     </div>
   );
 };
