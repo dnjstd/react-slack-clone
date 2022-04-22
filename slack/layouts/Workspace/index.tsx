@@ -25,6 +25,7 @@ import Menu from '@components/Menu';
 import { IUser } from '@typings/db';
 import Modal from '@components/Modal';
 import useInput from '@hooks/useInput';
+import { toast } from 'react-toastify';
 
 const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
@@ -34,7 +35,7 @@ const Workspace: FC = ({ children }) => {
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
-  const { data: useData, error, mutate } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher);
+  const { data: useData, mutate: revalidateUser } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher);
 
   const onLogout = useCallback(() => {
     axios
@@ -42,7 +43,7 @@ const Workspace: FC = ({ children }) => {
         withCredentials: true,
       })
       .then(() => {
-        mutate(false, false);
+        revalidateUser(false, false);
       });
   }, []);
 
@@ -59,7 +60,39 @@ const Workspace: FC = ({ children }) => {
     setShowCreateWorkspaceModal(true);
   }, []);
 
-  const onCreateWorkspace = useCallback(() => {}, []);
+  const onCreateWorkspace = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (!newWorkspace || !newWorkspace.trim()) {
+        return;
+      }
+      if (!newUrl || !newUrl.trim()) {
+        return;
+      }
+      axios
+        .post(
+          'http://localhost:3095/api/workspaces',
+          {
+            workspace: newWorkspace,
+            url: newUrl,
+          },
+          {
+            withCredentials: true,
+          },
+        )
+        .then(() => {
+          revalidateUser();
+          setShowCreateWorkspaceModal(false);
+          setNewWorkspace('');
+          setNewUrl('');
+        })
+        .catch((error) => {
+          console.dir(error);
+          toast.error(error.response?.data, { position: 'bottom-center' });
+        });
+    },
+    [newWorkspace, newUrl],
+  );
 
   const onCloseModal = useCallback(() => {
     setShowCreateWorkspaceModal(false);
