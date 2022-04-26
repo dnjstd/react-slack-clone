@@ -2,7 +2,7 @@ import React, { VFC, useCallback, useState } from 'react';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
-import { Link, Redirect, Route, Switch } from 'react-router-dom';
+import { Link, Redirect, Route, Switch, useParams } from 'react-router-dom';
 import {
   AddButton,
   Channels,
@@ -23,7 +23,7 @@ import { Button, Label, Input } from '@pages/SignUp/styles';
 import loadable from '@loadable/component';
 import gravatar from 'gravatar';
 import Menu from '@components/Menu';
-import { IUser } from '@typings/db';
+import { IUser, IChannel } from '@typings/db';
 import Modal from '@components/Modal';
 import useInput from '@hooks/useInput';
 import { toast } from 'react-toastify';
@@ -39,7 +39,15 @@ const Workspace: VFC = () => {
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
-  const { data: useData, mutate: revalidateUser } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher);
+
+  const { workspace } = useParams<{ workspace: string }>();
+  const { data: userData, mutate: revalidateUser } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher, {
+    dedupingInterval: 2000,
+  });
+  const { data: channelData } = useSWR<IChannel[]>(
+    userData ? `http://localhost:3095/api/workspaces/${workspace}/channels` : null,
+    fetcher,
+  );
 
   const onLogout = useCallback(() => {
     axios
@@ -111,7 +119,7 @@ const Workspace: VFC = () => {
     setShowCreateChannelModal(true);
   }, []);
 
-  if (!useData) {
+  if (!userData) {
     return <Redirect to="/login" />;
   }
 
@@ -120,13 +128,13 @@ const Workspace: VFC = () => {
       <Header>
         <RightMenu>
           <span onClick={onClickUserProfile}>
-            <ProfileImg src={gravatar.url(useData.email, { s: '28px', d: 'retro' })} alt={useData.nickname} />
+            <ProfileImg src={gravatar.url(userData.email, { s: '28px', d: 'retro' })} alt={userData.nickname} />
             {showUserMenu && (
               <Menu style={{ right: 0, top: 38 }} show={showUserMenu} onCloseModal={onCloseUserProfile}>
                 <ProfileModal>
-                  <img src={gravatar.url(useData.email, { s: '36px', d: 'retro' })} alt={useData.nickname} />
+                  <img src={gravatar.url(userData.email, { s: '36px', d: 'retro' })} alt={userData.nickname} />
                   <div>
-                    <span id="profile-name">{useData.nickname}</span>
+                    <span id="profile-name">{userData.nickname}</span>
                     <span id="profile-active">Active</span>
                   </div>
                 </ProfileModal>
@@ -139,7 +147,7 @@ const Workspace: VFC = () => {
 
       <WorkspaceWrapper>
         <Workspaces>
-          {useData?.Workspaces.map((ws) => {
+          {userData?.Workspaces.map((ws) => {
             return (
               <Link key={ws.id} to={`/workspace/${123}/channel/일반`}>
                 <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
@@ -159,12 +167,16 @@ const Workspace: VFC = () => {
                 <button onClick={onLogout}>로그아웃</button>
               </WorkspaceModal>
             </Menu>
+
+            {channelData?.map((v) => {
+              <div>{v.name}</div>;
+            })}
           </MenuScroll>
         </Channels>
         <Chats>
           <Switch>
-            <Route path="/workspace/channel" component={Channel} />
-            <Route path="/workspace/dm" component={DirectMessage} />
+            <Route path="/workspace/:workspace/channel/:channel" component={Channel} />
+            <Route path="/workspace/:workspace/dm/:id" component={DirectMessage} />
           </Switch>
         </Chats>
       </WorkspaceWrapper>

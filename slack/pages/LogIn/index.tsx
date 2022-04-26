@@ -39,7 +39,7 @@ const LogIn = () => {
   }
 
   if (data) {
-    return <Redirect to="/workspace/channel" />;
+    return <Redirect to="/workspace/slack-clone/channel/일반" />;
   }
 
   // if (!error && userData) {
