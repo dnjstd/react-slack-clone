@@ -168,15 +168,15 @@ const Workspace: VFC = () => {
               </WorkspaceModal>
             </Menu>
 
-            {channelData?.map((v) => {
-              <div>{v.name}</div>;
-            })}
+            {channelData?.map((v) => (
+              <div>{v.name}</div>
+            ))}
           </MenuScroll>
         </Channels>
         <Chats>
           <Switch>
-            <Route path="/workspace/:workspace/channel/:channel" component={Channel} />
-            <Route path="/workspace/:workspace/dm/:id" component={DirectMessage} />
+            <Route path="/channel/:channel" component={Channel} />
+            <Route path="/dm/:id" component={DirectMessage} />
           </Switch>
         </Chats>
       </WorkspaceWrapper>

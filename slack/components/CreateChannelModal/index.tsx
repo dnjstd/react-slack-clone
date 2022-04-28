@@ -5,6 +5,9 @@ import { Label, Input, Button } from '@pages/SignUp/styles';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import useSWR from 'swr';
+import fetcher from '@utils/fetcher';
+import { IUser, IChannel } from '@typings/db';
 
 interface Props {
   show: boolean;
@@ -16,7 +19,7 @@ const CreateChannelModal: VFC<Props> = ({ show, onCloseModal, setShowCreateChann
   const [newChannel, onChangeNewChannel, setNewChannel] = useInput('');
   const { workspace, channel } = useParams<{ workspace: string; channel: string }>();
 
-  const { data: userData, mutate: revalidateUser } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher, {
+  const { data: userData } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher, {
     dedupingInterval: 2000,
   });
   const { data: channelData, mutate } = useSWR<IChannel[]>(
@@ -29,7 +32,7 @@ const CreateChannelModal: VFC<Props> = ({ show, onCloseModal, setShowCreateChann
       e.preventDefault();
       axios
         .post(
-          `/api/workspaces/${workspace}/channels`,
+          `http://localhost:3095/api/workspaces/${workspace}/channels`,
           {
             name: newChannel,
           },
@@ -37,6 +40,7 @@ const CreateChannelModal: VFC<Props> = ({ show, onCloseModal, setShowCreateChann
         )
         .then(() => {
           setShowCreateChannelModal(false);
+          mutate();
           setNewChannel('');
         })
         .catch((error) => {
