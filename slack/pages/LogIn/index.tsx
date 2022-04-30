@@ -7,7 +7,7 @@ import { Link, Redirect } from 'react-router-dom';
 import useSWR from 'swr';
 
 const LogIn = () => {
-  const { data, error, mutate } = useSWR('/api/users', fetcher);
+  const { data: userData, error, mutate } = useSWR('/api/users', fetcher);
   const [logInError, setLogInError] = useState(false);
   const [email, onChangeEmail] = useInput('');
   const [password, onChangePassword] = useInput('');
@@ -24,8 +24,14 @@ const LogIn = () => {
             withCredentials: true,
           },
         )
-        .then((response) => {
-          mutate(response.data, false);
+        // .then((response) => {
+        //   mutate(response.data, false);
+        // })
+        // .catch((error) => {
+        //   setLogInError(error.response?.data?.code === 401);
+        // });
+        .then(() => {
+          mutate();
         })
         .catch((error) => {
           setLogInError(error.response?.data?.code === 401);
@@ -34,18 +40,17 @@ const LogIn = () => {
     [email, password, mutate],
   );
 
-  if (data === undefined) {
+  if (userData === undefined) {
     return <div>로딩중...</div>;
   }
 
-  if (data) {
-    return <Redirect to="/workspace/slack-clone/channel/일반" />;
-  }
-
-  // if (!error && userData) {
-  //   console.log('로그인됨', userData);
+  // if (userData) {
   //   return <Redirect to="/workspace/sleact/channel/일반" />;
   // }
+
+  if (!error && userData) {
+    return <Redirect to="/workspace/sleact/channel/일반" />;
+  }
 
   return (
     <div id="container">

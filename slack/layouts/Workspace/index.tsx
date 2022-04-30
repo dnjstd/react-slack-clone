@@ -125,7 +125,9 @@ const Workspace: VFC = () => {
     setShowCreateChannelModal(true);
   }, []);
 
-  const onClickInviteWorkspace = useCallback(() => {}, []);
+  const onClickInviteWorkspace = useCallback(() => {
+    setShowInviteWorkspaceModal(true);
+  }, []);
 
   if (!userData) {
     return <Redirect to="/login" />;
@@ -155,9 +157,9 @@ const Workspace: VFC = () => {
 
       <WorkspaceWrapper>
         <Workspaces>
-          {userData?.Workspaces.map((ws) => {
+          {userData?.Workspaces?.map((ws) => {
             return (
-              <Link key={ws.id} to={`/workspace/${123}/channel/일반`}>
+              <Link key={ws.id} to={`/workspace/${ws.url}/channel/일반`}>
                 <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
               </Link>
             );
@@ -178,9 +180,9 @@ const Workspace: VFC = () => {
             </Menu>
             <ChannelList />
             <DMList />
-            {channelData?.map((v) => (
+            {/* {channelData?.map((v) => (
               <div>{v.name}</div>
-            ))}
+            ))} */}
           </MenuScroll>
         </Channels>
         <Chats>
