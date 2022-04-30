@@ -24,12 +24,6 @@ const LogIn = () => {
             withCredentials: true,
           },
         )
-        // .then((response) => {
-        //   mutate(response.data, false);
-        // })
-        // .catch((error) => {
-        //   setLogInError(error.response?.data?.code === 401);
-        // });
         .then(() => {
           mutate();
         })
@@ -43,10 +37,6 @@ const LogIn = () => {
   if (userData === undefined) {
     return <div>로딩중...</div>;
   }
-
-  // if (userData) {
-  //   return <Redirect to="/workspace/sleact/channel/일반" />;
-  // }
 
   if (!error && userData) {
     return <Redirect to="/workspace/sleact/channel/일반" />;
