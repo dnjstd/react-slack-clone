@@ -25,7 +25,6 @@ const DirectMessage = () => {
   const onSubmitForm = useCallback(
     (e) => {
       e.preventDefault();
-      console.log(chat);
       //채팅 등록
       if (chat?.trim()) {
         axios
