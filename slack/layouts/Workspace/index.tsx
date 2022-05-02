@@ -61,7 +61,7 @@ const Workspace: VFC = () => {
       .then(() => {
         revalidateUser(false, false);
       });
-  }, []);
+  }, [revalidateUser]);
 
   const onCloseUserProfile = useCallback((e) => {
     e.stopPropagation();
